@@ -9,5 +9,8 @@ export default class TicketPaymentService {
     if (!Number.isInteger(totalAmountToPay)) {
       throw new TypeError('totalAmountToPay must be an integer');
     }
+
+    return true;
+    
   }
 }
