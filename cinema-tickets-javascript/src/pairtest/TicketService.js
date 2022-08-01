@@ -103,8 +103,44 @@ export default class TicketService {
   splitTickets(ticketTypeRequests, filterType){
 
 
-    return ticketTypeRequests.filter(item => item === filterType);
+    return ticketTypeRequests.filter(item => item.toUpperCase() === filterType);
 
+
+  }
+
+  ticketCost(type, tickets){
+
+    if(type === "ADULT"){
+
+      return tickets.getNoOfTickets() *  this.#adultTicketCost;
+
+    }else if(type === "CHILD"){
+
+      return tickets.getNoOfTickets() *  this.#childTicketCost;
+
+    }else{
+
+      return tickets.getNoOfTickets() *  this.#infantTicketCost;
+
+    }
+
+  }
+
+  calculateSeats(adults, children, infants, allocatInfant){
+
+    let infantSeat;
+
+    if(allocatInfant == "no"){
+
+       infantSeat = 0;
+
+    }else{
+
+      infantSeat = infants.getNoOfTickets();
+
+    }
+
+    return adults.getNoOfTickets() + children.getNoOfTickets() + infantSeat;
 
   }
 
@@ -114,13 +150,15 @@ export default class TicketService {
 
   purchaseTickets(accountId, ticketTypeRequests) {
 
-    if(accountId === 0 || ticketTypeRequests === null){
+    console.log(ticketTypeRequests);
+
+    if(accountId === 0 || ticketTypeRequests === null || ticketTypeRequests === "" || ticketTypeRequests.length === 0){
 
       if(accountId === 0){
         
         throw new InvalidPurchaseException('Please enter a valid account');
 
-      }else if(ticketTypeRequest === null){
+      }else if(ticketTypeRequests === null || ticketTypeRequests === "" || ticketTypeRequests.length === 0){
 
         throw new InvalidPurchaseException('Please purchase tickets');
 
@@ -152,13 +190,13 @@ export default class TicketService {
 
     }else{
 
-      const adultTicketCost = adultTickets.getNoOfTickets() *  this.#adultTicketCost;
-      const childTicketCost = childTickets.getNoOfTickets() *  this.#childTicketCost;
-      const infantTicketCost = infantTickets.getNoOfTickets() *  this.#infantTicketCost;
+      const adultTicketCost = this.ticketCost("ADULT", adultTickets);
+      const childTicketCost = this.ticketCost("CHILD", childTickets);
+      const infantTicketCost = this.ticketCost("INFANT", infantTickets);
 
       const totalTicketCost = adultTicketCost + childTicketCost + infantTicketCost;
 
-      const seatsRequestNo = adultTickets.getNoOfTickets() + childTickets.getNoOfTickets();
+      const seatsRequestNo = this.calculateSeats(adultTickets, childTickets, infantTickets, "no");
 
       const paymentService = new TicketPaymentService;
       const seatReservationService = new SeatReservationService;
@@ -187,7 +225,7 @@ const ticketsService = new TicketService(20,10,0,20,1);
 
 try{
 
-  let testTicketPurchase = ticketsService.purchaseTickets(1,["ADULT","ADULT", "INFANT","CHILD","ADULT","ADULT", "INFANT","CHILD"]);
+  let testTicketPurchase = ticketsService.purchaseTickets(1,["Adult","ADULT", "CHILD"]);
 
   console.log(testTicketPurchase);
 
